@@ -27,3 +27,6 @@ SYS,SYS,SYS,SYS,SYS,SYS,SYS,SYS,SYS,SYS
 ## Usual stuff
 
 This software comes WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+
+Acknowledgements to the ground laying work by Anton Scheffer, via
+https://technology.amis.nl/2015/03/13/using-an-aggregation-function-to-query-a-json-string-straight-from-sql/

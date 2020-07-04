@@ -34,7 +34,7 @@ is
           dbms_lob.createtemporary( self.t_clob, true, dbms_lob.call );
           dbms_lob.writeappend( self.t_clob, length( self.t_varchar2 ), self.t_varchar2 );
         else
-          dbms_lob.writeappend( self.t_clob, length( self.t_varchar2 +1), ','||self.t_varchar2 );
+          dbms_lob.writeappend( self.t_clob, length( self.t_varchar2 ), ','||self.t_varchar2 );
         end if;
         self.t_varchar2 := p_val;
       end if;

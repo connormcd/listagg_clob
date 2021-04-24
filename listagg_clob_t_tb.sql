@@ -19,7 +19,6 @@ is
     begin
       if self.t_length + lengthb( p_val ) < 4000 then
         if self.t_varchar2 is null then
-          -- dbms_output.put_line('AAA ' || p_val);
           self.t_varchar2 := p_val;
         else
           self.t_varchar2 := self.t_varchar2 || ',' || p_val;

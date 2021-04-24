@@ -4,7 +4,7 @@ is
   return number
   is
   begin
-    sctx := listagg_clob_t( null, null );
+    sctx := listagg_clob_t( null, null, 0 );
     return odciconst.success;
   end;
 --
@@ -17,27 +17,28 @@ is
     procedure add_val( p_val varchar2 )
     is
     begin
-      if nvl( lengthb( self.t_varchar2 ), 0 ) + lengthb( p_val ) <= 4000
--- Strange limit, the max size of self.t_varchar2 is 29993
--- If you exceeds this number you get ORA-22813: operand value exceeds system limits
--- with 29993 you get JSON-output as large 58894 bytes
--- with 4000 you get JSON-output as large 1063896 bytes, probably max more
-      then
+      if self.t_length + lengthb( p_val ) < 4000 then
         if self.t_varchar2 is null then
-          self.t_varchar2 := self.t_varchar2 || p_val;
+          -- dbms_output.put_line('AAA ' || p_val);
+          self.t_varchar2 := p_val;
         else
           self.t_varchar2 := self.t_varchar2 || ',' || p_val;
         end if;
       else
-        if self.t_clob is null
-        then
+        -- Concatenated string too long to fit into a VARCHAR2
+        if self.t_clob is null then
           dbms_lob.createtemporary( self.t_clob, true, dbms_lob.call );
-          dbms_lob.writeappend( self.t_clob, length( self.t_varchar2 ), self.t_varchar2 );
-        else
-          dbms_lob.writeappend( self.t_clob, length( self.t_varchar2 ), ','||self.t_varchar2 );
+          if self.t_varchar2 is not null then
+            dbms_lob.writeappend( self.t_clob, length( self.t_varchar2 ), self.t_varchar2 );
+            dbms_lob.writeappend( self.t_clob, 1, ',' );
+          end if;
+          self.t_varchar2 := null;
+        else  -- self.t_clob is not null
+            dbms_lob.writeappend( self.t_clob, 1, ',' );
         end if;
-        self.t_varchar2 := p_val;
+        dbms_lob.writeappend( self.t_clob, length( p_val ), p_val );
       end if;
+      self.t_length := self.t_length + 1 + lengthb( p_val );  -- separator adds 1 byte
     end;
   begin
     add_val( a_val );
@@ -71,27 +72,35 @@ is
   return number
   is
   begin
-    if self.t_clob is null
-    then
-      dbms_lob.createtemporary( self.t_clob, true, dbms_lob.call );
+    if self.t_length + ctx2.t_length < 4000 then
+      if ctx2.t_varchar2 is not null then
+        self.t_varchar2 := self.t_varchar2 || ',' || ctx2.t_varchar2;
+        ctx2.t_varchar2 := null;
+      end if;
+    else
+      -- Concatenated string too long to fit into a VARCHAR2
+      if self.t_clob is null then
+        dbms_lob.createtemporary( self.t_clob, true, dbms_lob.call );
+        if self.t_varchar2 is not null then
+          dbms_lob.writeappend( self.t_clob, length( self.t_varchar2 ), self.t_varchar2 );
+        end if;
+        self.t_varchar2 := null;
+      end if;
+      if ctx2.t_clob is not null then
+        dbms_lob.writeappend( self.t_clob, 1, ',' );
+        dbms_lob.append( self.t_clob, ctx2.t_clob );
+        dbms_lob.freetemporary( ctx2.t_clob );
+      end if;
+      if ctx2.t_varchar2 is not null then
+        dbms_lob.writeappend( self.t_clob, 1, ',' );
+        dbms_lob.writeappend( self.t_clob, length( ctx2.t_varchar2 ), ctx2.t_varchar2 );
+        ctx2.t_varchar2 := null;
+      end if;
     end if;
-    if self.t_varchar2 is not null
-    then
-      dbms_lob.writeappend( self.t_clob, length( self.t_varchar2 ), self.t_varchar2 );
-    end if;
-    if ctx2.t_clob is not null
-    then
-      dbms_lob.append( self.t_clob, ctx2.t_clob );
-      dbms_lob.freetemporary( ctx2.t_clob );
-    end if;
-    if ctx2.t_varchar2 is not null
-    then
-      dbms_lob.writeappend( self.t_clob, length( ctx2.t_varchar2 ), ctx2.t_varchar2 );
-      ctx2.t_varchar2 := null;
-    end if;
+    self.t_length := self.t_length + 1 + ctx2.t_length;  -- separator adds 1 byte
     return odciconst.success;
   end;
 --
 end;
 /
-sho err
+show error

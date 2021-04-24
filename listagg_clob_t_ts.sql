@@ -1,6 +1,7 @@
 create or replace type listagg_clob_t as object
 ( t_varchar2 varchar2(32767)
 , t_clob clob
+, t_length number
 , static function odciaggregateinitialize( sctx in out listagg_clob_t )
   return number
 , member function odciaggregateiterate

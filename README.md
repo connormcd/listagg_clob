@@ -1,7 +1,7 @@
-# listagg_clob
+f# listagg_clob
 extends listagg beyond its varchar2 limits
 
-"Standard" LISTAGG takes varchar2 and returns a concatenation that may be longer than the limit of varchar2 which can be problematic.  LISTAGG_CLOB takes *varchar2* inputs and returns a clob to workaround the limitation of the *output* length. There is an optional delimiter parameter which can be any character or sring up to 255 charactwers in length. This defaults to ','.
+"Standard" LISTAGG takes varchar2 and returns a concatenation that may be longer than the limit of varchar2 which can be problematic.  LISTAGG_CLOB takes *varchar2* inputs and returns a clob to workaround the limitation of the *output* length. There is an optional delimiter parameter which can be any character or string up to 255 characters in length. This defaults to ','.
 
 
 ## Installation Guide

@@ -15,7 +15,7 @@ extends listagg beyond its varchar2 limits
 ## Sample Usage
 
 ```console
-SQL> select listagg_clob(owner)
+SQL> select listagg_clob(owner, ',')
   2  from dba_objects
   3  where rownum <= 10;
 

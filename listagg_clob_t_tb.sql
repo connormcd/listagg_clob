@@ -1,10 +1,11 @@
 create or replace type body listagg_clob_t
 is
-  static function odciaggregateinitialize( sctx in out listagg_clob_t )
+  static function odciaggregateinitialize( sctx in out listagg_clob_t
+                                         , delim in varchar2 default ',' )
   return number
   is
   begin
-    sctx := listagg_clob_t( null, null );
+    sctx := listagg_clob_t( null, delim, null );
     return odciconst.success;
   end;
 --
@@ -26,7 +27,7 @@ is
         if self.t_varchar2 is null then
           self.t_varchar2 := self.t_varchar2 || p_val;
         else
-          self.t_varchar2 := self.t_varchar2 || ',' || p_val;
+          self.t_varchar2 := self.t_varchar2 || self.t_delim || p_val;
         end if;
       else
         if self.t_clob is null
@@ -34,7 +35,7 @@ is
           dbms_lob.createtemporary( self.t_clob, true, dbms_lob.call );
           dbms_lob.writeappend( self.t_clob, length( self.t_varchar2 ), self.t_varchar2 );
         else
-          dbms_lob.writeappend( self.t_clob, length( self.t_varchar2 ), ','||self.t_varchar2 );
+          dbms_lob.writeappend( self.t_clob, length( self.t_varchar2 ), self.t_delim || self.t_varchar2 );
         end if;
         self.t_varchar2 := p_val;
       end if;
@@ -93,5 +94,3 @@ is
   end;
 --
 end;
-/
-sho err

@@ -1,7 +1,9 @@
 create or replace type listagg_clob_t as object
 ( t_varchar2 varchar2(32767)
+, t_delim varchar2(255)
 , t_clob clob
-, static function odciaggregateinitialize( sctx in out listagg_clob_t )
+, static function odciaggregateinitialize( sctx in out listagg_clob_t
+                                         , delim in varchar2 default ',' )
   return number
 , member function odciaggregateiterate
     ( self in out listagg_clob_t
